@@ -1,7 +1,7 @@
-"use client"; // Ensure it's a client component
+"use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation"; // Import Next.js router
+import { useRouter, useParams } from "next/navigation";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -29,13 +29,6 @@ import { useUser } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 
-// Define the props expected by Next.js pages.
-interface CheckoutPageProps {
-  params: { id: string };
-  searchParams: Record<string, string | string[]>;
-  disableCustomTheme?: boolean;
-}
-
 const steps = ["Shipping address", "Payment details"];
 
 function getStepContent(step: number) {
@@ -49,52 +42,49 @@ function getStepContent(step: number) {
   }
 }
 
-export default function Checkout({
-  params,
-  searchParams,
-  disableCustomTheme,
-}: CheckoutPageProps) {
-  // Reference searchParams to mark it as used.
-  void searchParams;
-
+export default function Checkout() {
+  // Get the router and params using Next.js client hooks
   const router = useRouter();
+  const params = useParams();
+  const id = params?.id; // id from the URL
+
+  // Local state for the active step in the checkout process
   const [activeStep, setActiveStep] = React.useState(0);
 
+  // Get the Convex client and hooks for user, query, and mutation
   const convex = getConvexClient();
   const user = useUser();
 
-  // Query for event details using the id from params.
+  // Query for event details using the id from the URL.
   const event = useQuery(api.events.getById, {
-    eventId: params.id as Id<"events">,
+    eventId: id as Id<"events">,
   });
 
-  // Get queue position for waiting list.
-  const queuePosition = convex.query(api.waitingList.getQueuePosition, {
-    eventId: params.id as Id<"events">,
-    userId: user.user?.id || '',
-  });
-
+  // Set up a mutation for purchasing a ticket.
   const purchaseTicket = useMutation(api.events.purchaseTicket);
 
   const handlePurchaseTicket = async () => {
     try {
-      const position = await queuePosition;
+      // Query for the waiting list queue position
+      const position = await convex.query(api.waitingList.getQueuePosition, {
+        eventId: id as Id<"events">,
+        userId: user.user?.id || "",
+      });
       if (!position) {
         console.error("Queue position not found.");
         return;
       }
-
+      // Purchase the ticket using the mutation
       await purchaseTicket({
-        userId: user.user?.id || '',
-        eventId: params.id as Id<"events">,
+        userId: user.user?.id || "",
+        eventId: id as Id<"events">,
         waitingListId: position._id as Id<"waitingList">,
         paymentInfo: {
-          paymentIntentId: '', // Replace with actual payment intent id from Stripe
+          paymentIntentId: "", // Replace with actual payment intent id from Stripe
           amount: event?.price || 0,
         },
       });
-
-      router.push(`/tickets/${params.id}`);
+      router.push(`/tickets/${id}`);
     } catch (error) {
       console.error("Error purchasing ticket:", error);
     }
@@ -104,7 +94,7 @@ export default function Checkout({
 
   const handleNext = () => {
     if (activeStep === steps.length) {
-      router.push(`/tickets/${params.id}`);
+      router.push(`/tickets/${id}`);
     } else {
       setActiveStep(activeStep + 1);
     }
@@ -115,7 +105,7 @@ export default function Checkout({
   };
 
   return (
-    <AppTheme disableCustomTheme={disableCustomTheme}>
+    <AppTheme>
       <CssBaseline enableColorScheme />
       <Box sx={{ position: "fixed", top: "1rem", right: "1rem" }}>
         <ColorModeIconDropdown />
@@ -188,9 +178,19 @@ export default function Checkout({
               maxWidth: { sm: "100%", md: 600 },
             }}
           >
-            <Stepper id="desktop-stepper" activeStep={activeStep} sx={{ width: "100%", height: 40 }}>
+            <Stepper
+              id="desktop-stepper"
+              activeStep={activeStep}
+              sx={{ width: "100%", height: 40 }}
+            >
               {steps.map((label) => (
-                <Step key={label} sx={{ ":first-of-type": { pl: 0 }, ":last-of-type": { pr: 0 } }}>
+                <Step
+                  key={label}
+                  sx={{
+                    ":first-of-type": { pl: 0 },
+                    ":last-of-type": { pr: 0 },
+                  }}
+                >
                   <StepLabel>{label}</StepLabel>
                 </Step>
               ))}
@@ -210,7 +210,9 @@ export default function Checkout({
                 <Typography variant="subtitle2" gutterBottom>
                   Selected products
                 </Typography>
-                <Typography variant="body1">{activeStep >= 2 ? "$144.97" : "$134.98"}</Typography>
+                <Typography variant="body1">
+                  {activeStep >= 2 ? "$144.97" : "$134.98"}
+                </Typography>
               </div>
               <InfoMobile totalPrice={activeStep >= 2 ? "$144.97" : "$134.98"} />
             </CardContent>
@@ -227,10 +229,27 @@ export default function Checkout({
               gap: { xs: 5, md: "none" },
             }}
           >
-            <Stepper id="mobile-stepper" activeStep={activeStep} alternativeLabel sx={{ display: { sm: "flex", md: "none" } }}>
+            <Stepper
+              id="mobile-stepper"
+              activeStep={activeStep}
+              alternativeLabel
+              sx={{ display: { sm: "flex", md: "none" } }}
+            >
               {steps.map((label) => (
-                <Step key={label} sx={{ ":first-of-type": { pl: 0 }, ":last-of-type": { pr: 0 } }}>
-                  <StepLabel sx={{ ".MuiStepLabel-labelContainer": { maxWidth: "70px" } }}>{label}</StepLabel>
+                <Step
+                  key={label}
+                  sx={{
+                    ":first-of-type": { pl: 0 },
+                    ":last-of-type": { pr: 0 },
+                  }}
+                >
+                  <StepLabel
+                    sx={{
+                      ".MuiStepLabel-labelContainer": { maxWidth: "70px" },
+                    }}
+                  >
+                    {label}
+                  </StepLabel>
                 </Step>
               ))}
             </Stepper>
@@ -240,23 +259,47 @@ export default function Checkout({
                 <Typography variant="h1">📦</Typography>
                 <Typography variant="h5">Thank you for your order!</Typography>
                 <Typography variant="body1" sx={{ color: "text.secondary" }}>
-                  Your order number is <strong>#140396</strong>. We have emailed your order confirmation and will update you once it&apos;s shipped.
+                  Your order number is <strong>#140396</strong>. We have emailed your
+                  order confirmation and will update you once it&apos;s shipped.
                 </Typography>
-                <Button variant="contained" sx={{ alignSelf: "start", width: { xs: "100%", sm: "auto" }}} onClick={handlePurchaseTicket}>
+                <Button
+                  variant="contained"
+                  sx={{
+                    alignSelf: "start",
+                    width: { xs: "100%", sm: "auto" },
+                  }}
+                  onClick={handlePurchaseTicket}
+                >
                   Go to my orders
                 </Button>
               </Stack>
             ) : (
               <>
                 {getStepContent(activeStep)}
-                <Box sx={{ display: "flex", justifyContent: activeStep !== 0 ? "space-between" : "flex-end" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent:
+                      activeStep !== 0 ? "space-between" : "flex-end",
+                  }}
+                >
                   {activeStep !== 0 && (
-                    <Button startIcon={<ChevronLeftRoundedIcon />} onClick={handleBack} variant="text">
+                    <Button
+                      startIcon={<ChevronLeftRoundedIcon />}
+                      onClick={handleBack}
+                      variant="text"
+                    >
                       Previous
                     </Button>
                   )}
-                  <Button variant="contained" endIcon={<ChevronRightRoundedIcon />} onClick={handleNext}>
-                    {activeStep === steps.length - 1 ? "Place order" : "Next"}
+                  <Button
+                    variant="contained"
+                    endIcon={<ChevronRightRoundedIcon />}
+                    onClick={handleNext}
+                  >
+                    {activeStep === steps.length - 1
+                      ? "Place order"
+                      : "Next"}
                   </Button>
                 </Box>
               </>
