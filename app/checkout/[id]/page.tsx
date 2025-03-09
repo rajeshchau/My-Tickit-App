@@ -1,7 +1,7 @@
 "use client"; // Ensure it's a client component
 
 import * as React from "react";
-import { useRouter, useParams } from "next/navigation"; // Import Next.js router and params
+import { useRouter } from "next/navigation"; // Import Next.js router
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -19,7 +19,6 @@ import AddressForm from "../components/AddressForm";
 import Info from "../components/Info";
 import InfoMobile from "../components/InfoMobile";
 import PaymentForm from "../components/PaymentForm";
-// import Review from "../components/Review";
 import SitemarkIcon from "../components/SitemarkIcon";
 import AppTheme from "../shared-theme/AppTheme";
 import ColorModeIconDropdown from "../shared-theme/ColorModeIconDropdown";
@@ -30,6 +29,13 @@ import { useUser } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 
+// Define the props expected by Next.js pages.
+interface CheckoutPageProps {
+  params: { id: string };
+  searchParams: Record<string, string | string[]>;
+  disableCustomTheme?: boolean;
+}
+
 const steps = ["Shipping address", "Payment details"];
 
 function getStepContent(step: number) {
@@ -38,24 +44,31 @@ function getStepContent(step: number) {
       return <AddressForm />;
     case 1:
       return <PaymentForm />;
-    // case 2:
-    //   return <Review />;
     default:
       throw new Error("Unknown step");
   }
 }
 
-export default function Checkout(props: { disableCustomTheme?: boolean }) {
-  const router = useRouter(); // Initialize Next.js router
+export default function Checkout({
+  params,
+  searchParams,
+  disableCustomTheme,
+}: CheckoutPageProps) {
+  // Reference searchParams to mark it as used.
+  void searchParams;
+
+  const router = useRouter();
   const [activeStep, setActiveStep] = React.useState(0);
 
   const convex = getConvexClient();
   const user = useUser();
-  const params = useParams();
+
+  // Query for event details using the id from params.
   const event = useQuery(api.events.getById, {
     eventId: params.id as Id<"events">,
   });
 
+  // Get queue position for waiting list.
   const queuePosition = convex.query(api.waitingList.getQueuePosition, {
     eventId: params.id as Id<"events">,
     userId: user.user?.id || '',
@@ -65,37 +78,32 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
 
   const handlePurchaseTicket = async () => {
     try {
-      // Wait for the queue position from the waiting list query
       const position = await queuePosition;
       if (!position) {
         console.error("Queue position not found.");
         return;
       }
 
-      // Call the purchaseTicket mutation with the required fields
       await purchaseTicket({
         userId: user.user?.id || '',
         eventId: params.id as Id<"events">,
         waitingListId: position._id as Id<"waitingList">,
         paymentInfo: {
-          paymentIntentId: '', // You need to get this from Stripe
+          paymentIntentId: '', // Replace with actual payment intent id from Stripe
           amount: event?.price || 0,
         },
       });
 
-      // Optionally, navigate to a success page after a successful purchase
       router.push(`/tickets/${params.id}`);
     } catch (error) {
       console.error("Error purchasing ticket:", error);
-      // Optionally, update UI state to reflect the error
     }
   };
 
-  const totalPrice = event ? `$${event.price.toFixed(2)}` : "$0.00"; // Format total price
+  const totalPrice = event ? `$${event.price.toFixed(2)}` : "$0.00";
 
   const handleNext = () => {
     if (activeStep === steps.length) {
-      // Redirect to success page after checkout
       router.push(`/tickets/${params.id}`);
     } else {
       setActiveStep(activeStep + 1);
@@ -107,7 +115,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
   };
 
   return (
-    <AppTheme {...props}>
+    <AppTheme disableCustomTheme={disableCustomTheme}>
       <CssBaseline enableColorScheme />
       <Box sx={{ position: "fixed", top: "1rem", right: "1rem" }}>
         <ColorModeIconDropdown />
@@ -120,10 +128,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
             xs: "100%",
             sm: "calc(100dvh - var(--template-frame-height, 0px))",
           },
-          mt: {
-            xs: 4,
-            sm: 0,
-          },
+          mt: { xs: 4, sm: 0 },
         }}
       >
         <Grid
@@ -229,6 +234,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
                 </Step>
               ))}
             </Stepper>
+
             {activeStep === steps.length ? (
               <Stack spacing={2} useFlexGap>
                 <Typography variant="h1">📦</Typography>
@@ -241,7 +247,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
                 </Button>
               </Stack>
             ) : (
-              <React.Fragment>
+              <>
                 {getStepContent(activeStep)}
                 <Box sx={{ display: "flex", justifyContent: activeStep !== 0 ? "space-between" : "flex-end" }}>
                   {activeStep !== 0 && (
@@ -253,7 +259,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
                     {activeStep === steps.length - 1 ? "Place order" : "Next"}
                   </Button>
                 </Box>
-              </React.Fragment>
+              </>
             )}
           </Box>
         </Grid>
