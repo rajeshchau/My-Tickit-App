@@ -5,6 +5,7 @@ declare module '@mui/material/Paper' {
     highlighted: true;
   }
 }
+
 declare module '@mui/material/styles/createPalette' {
   interface ColorRange {
     50: string;
@@ -19,7 +20,11 @@ declare module '@mui/material/styles/createPalette' {
     900: string;
   }
 
-  interface PaletteColor extends ColorRange {}
+  // Extend ColorRange for theme compatibility.
+  // A dummy property is added to avoid ESLint error about empty interfaces.
+  interface PaletteColor extends ColorRange {
+    __brand?: never;
+  }
 
   interface Palette {
     baseShadow: string;
@@ -394,7 +399,7 @@ export const shape = {
   borderRadius: 8,
 };
 
-// @ts-ignore
+// @ts-expect-error: Custom CSS property for shadows not verified by TypeScript.
 const defaultShadows: Shadows = [
   'none',
   'var(--template-palette-baseShadow)',

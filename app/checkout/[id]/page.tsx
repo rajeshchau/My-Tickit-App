@@ -19,7 +19,7 @@ import AddressForm from "../components/AddressForm";
 import Info from "../components/Info";
 import InfoMobile from "../components/InfoMobile";
 import PaymentForm from "../components/PaymentForm";
-import Review from "../components/Review";
+// import Review from "../components/Review";
 import SitemarkIcon from "../components/SitemarkIcon";
 import AppTheme from "../shared-theme/AppTheme";
 import ColorModeIconDropdown from "../shared-theme/ColorModeIconDropdown";
@@ -29,7 +29,6 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useUser } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
-
 
 const steps = ["Shipping address", "Payment details"];
 
@@ -49,9 +48,6 @@ function getStepContent(step: number) {
 export default function Checkout(props: { disableCustomTheme?: boolean }) {
   const router = useRouter(); // Initialize Next.js router
   const [activeStep, setActiveStep] = React.useState(0);
-  // const queuePosition = useQuery(api.events.purchaseTicket, {
-  //   id: props.id,
-  // });
 
   const convex = getConvexClient();
   const user = useUser();
@@ -65,10 +61,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
     userId: user.user?.id || '',
   });
 
- const processing = useMutation(api.waitingList.processQueue);
-
   const purchaseTicket = useMutation(api.events.purchaseTicket);
-  
 
   const handlePurchaseTicket = async () => {
     try {
@@ -78,7 +71,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
         console.error("Queue position not found.");
         return;
       }
-  
+
       // Call the purchaseTicket mutation with the required fields
       await purchaseTicket({
         userId: user.user?.id || '',
@@ -89,7 +82,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
           amount: event?.price || 0,
         },
       });
-  
+
       // Optionally, navigate to a success page after a successful purchase
       router.push(`/tickets/${params.id}`);
     } catch (error) {
@@ -97,15 +90,11 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
       // Optionally, update UI state to reflect the error
     }
   };
-  
-   
-
 
   const totalPrice = event ? `$${event.price.toFixed(2)}` : "$0.00"; // Format total price
 
   const handleNext = () => {
-    if (activeStep === steps.length ) {
-      
+    if (activeStep === steps.length) {
       // Redirect to success page after checkout
       router.push(`/tickets/${params.id}`);
     } else {
@@ -164,7 +153,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
               maxWidth: 500,
             }}
           >
-            <Info totalPrice={totalPrice}  />
+            <Info totalPrice={totalPrice} />
           </Box>
         </Grid>
 
@@ -245,7 +234,7 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
                 <Typography variant="h1">📦</Typography>
                 <Typography variant="h5">Thank you for your order!</Typography>
                 <Typography variant="body1" sx={{ color: "text.secondary" }}>
-                  Your order number is <strong>#140396</strong>. We have emailed your order confirmation and will update you once it's shipped.
+                  Your order number is <strong>#140396</strong>. We have emailed your order confirmation and will update you once it&apos;s shipped.
                 </Typography>
                 <Button variant="contained" sx={{ alignSelf: "start", width: { xs: "100%", sm: "auto" }}} onClick={handlePurchaseTicket}>
                   Go to my orders
@@ -272,7 +261,3 @@ export default function Checkout(props: { disableCustomTheme?: boolean }) {
     </AppTheme>
   );
 }
-
-// function getConvexClient() {
-//   throw new Error("Function not implemented.");
-// }

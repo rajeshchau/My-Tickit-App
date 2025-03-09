@@ -4,30 +4,22 @@
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-
-import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 // import { createStripeConnectLoginLink } from "@/app/actions/createStripeConnectLoginLink";
 // import { getStripeConnectAccountStatus } from "@/app/actions/getStripeConnectAccountStatus";
 // import type { AccountStatus } from "@/app/actions/getStripeConnectAccountStatus";
 import { CalendarDays, Cog, Plus } from "lucide-react";
 import Link from "next/link";
-import Spinner from "./Spinner";
+// import Spinner from "./Spinner";
 
 export default function SellerDashboard() {
   const [accountCreatePending, setAccountCreatePending] = useState(false);
-  const [accountLinkCreatePending, setAccountLinkCreatePending] =
-    useState(false);
+  const [accountLinkCreatePending, setAccountLinkCreatePending] = useState(false);
   const [error, setError] = useState(false);
-  const [accountStatus, setAccountStatus] = useState<null>(
-    null
-  );
-  const router = useRouter();
   const { user } = useUser();
   const stripeConnectId = useQuery(api.users.getUsersStripeConnectId, {
     userId: user?.id || "",
   });
-
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -41,38 +33,36 @@ export default function SellerDashboard() {
         </div>
 
         {/* Main Content */}
-        
-          <>
-            <div className="bg-white p-8 rounded-lg">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                Sell tickets for your events
-              </h2>
-              <p className="text-gray-600 mb-8">
-                List your tickets for sale and manage your listings
-              </p>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <div className="flex justify-center gap-4">
-                  <Link
-                    href="/seller/new-event"
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <Plus className="w-5 h-5" />
-                    Create Event
-                  </Link>
-                  <Link
-                    href="/seller/events"
-                    className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    <CalendarDays className="w-5 h-5" />
-                    View My Events
-                  </Link>
-                </div>
+        <>
+          <div className="bg-white p-8 rounded-lg">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              Sell tickets for your events
+            </h2>
+            <p className="text-gray-600 mb-8">
+              List your tickets for sale and manage your listings
+            </p>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex justify-center gap-4">
+                <Link
+                  href="/seller/new-event"
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                  Create Event
+                </Link>
+                <Link
+                  href="/seller/events"
+                  className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  <CalendarDays className="w-5 h-5" />
+                  View My Events
+                </Link>
               </div>
             </div>
+          </div>
 
-            <hr className="my-8" />
-          </>
-        
+          <hr className="my-8" />
+        </>
 
         <div className="p-6">
           {/* Account Creation Section */}
@@ -89,10 +79,8 @@ export default function SellerDashboard() {
                 onClick={async () => {
                   setAccountCreatePending(true);
                   setError(false);
-              
-                    setError(true);
-                    setAccountCreatePending(false);
-                  
+                  setError(true);
+                  setAccountCreatePending(false);
                 }}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
@@ -102,7 +90,7 @@ export default function SellerDashboard() {
           )}
 
           {/* Account Status Section */}
-          {stripeConnectId && accountStatus && (
+          {stripeConnectId && (
             <div className="space-y-6">
               {/* Status Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,11 +100,8 @@ export default function SellerDashboard() {
                     Account Status
                   </h3>
                   <div className="mt-2 flex items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full mr-2 `}
-                        />
-                    <span className="text-lg font-semibold">
-                    </span>
+                    <div className={`w-3 h-3 rounded-full mr-2`} />
+                    <span className="text-lg font-semibold"></span>
                   </div>
                 </div>
 
@@ -138,9 +123,7 @@ export default function SellerDashboard() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="ml-2">
-                       
-                      </span>
+                      <span className="ml-2"></span>
                     </div>
                     <div className="flex items-center">
                       <svg
@@ -154,77 +137,59 @@ export default function SellerDashboard() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="ml-2">
-                        
-                      </span>
+                      <span className="ml-2"></span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Requirements Section */}
-        
-                      
-                    </div>
-                  )}
-                  {/* Only show Add Information button if there are requirements */}
-                  {!accountLinkCreatePending && (
-                    <button
-                      onClick={async () => {
-                        setAccountLinkCreatePending(true);
-                        setError(false);
-                       
-                        setAccountLinkCreatePending(false);
-                      }}
-                      className="mt-4 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
-                    >
-                      Complete Requirements
-                    </button>
-                  )}
-                </div>
-              
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 mt-6">
-               
-                  <button
-                   
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                  >
-                    <Cog className="w-4 h-4 mr-2" />
-                    Seller Dashboard
-                  </button>
-                
+              {!accountLinkCreatePending && (
                 <button
-                 
-                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                  onClick={async () => {
+                    setAccountLinkCreatePending(true);
+                    setError(false);
+                    setAccountLinkCreatePending(false);
+                  }}
+                  className="mt-4 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
                 >
-                  Refresh Status
+                  Complete Requirements
                 </button>
-              </div>
-
-              {error && (
-                <div className="mt-4 bg-red-50 text-red-600 p-3 rounded-lg">
-                  Unable to access Stripe dashboard. Please complete all
-                  requirements first.
-                </div>
               )}
             </div>
-          
-
-          {/* Loading States */}
-          {accountCreatePending && (
-            <div className="text-center py-4 text-gray-600">
-              Creating your seller account...
-            </div>
           )}
-          {accountLinkCreatePending && (
-            <div className="text-center py-4 text-gray-600">
-              Preparing account setup...
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3 mt-6">
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+              <Cog className="w-4 h-4 mr-2" />
+              Seller Dashboard
+            </button>
+            <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+              Refresh Status
+            </button>
+          </div>
+
+          {error && (
+            <div className="mt-4 bg-red-50 text-red-600 p-3 rounded-lg">
+              Unable to access Stripe dashboard. Please complete all
+              requirements first.
             </div>
           )}
         </div>
-      
-  
+
+        {/* Loading States */}
+        {accountCreatePending && (
+          <div className="text-center py-4 text-gray-600">
+            Creating your seller account...
+          </div>
+        )}
+        {accountLinkCreatePending && (
+          <div className="text-center py-4 text-gray-600">
+            Preparing account setup...
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -17,7 +17,6 @@ export default function PurchaseTicket({ eventId }: PurchaseTicketProps) {
   const router = useRouter();
   const { user } = useUser();
   const [timeRemaining, setTimeRemaining] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const queuePosition = useQuery(api.waitingList.getQueuePosition, {
     eventId,
@@ -81,10 +80,10 @@ export default function PurchaseTicket({ eventId }: PurchaseTicketProps) {
 
         <button
           onClick={handlePurchase}
-          disabled={isExpired || isLoading}
+          disabled={isExpired}
           className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-lg font-bold shadow-md hover:from-amber-600 hover:to-amber-700 transform hover:scale-[1.02] transition-all duration-200 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100 text-lg"
         >
-          {isLoading ? "Redirecting to checkout..." : "Purchase Your Ticket Now →"}
+          Purchase Your Ticket Now →
         </button>
 
         <div className="mt-4">

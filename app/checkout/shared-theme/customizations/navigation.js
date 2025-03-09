@@ -58,9 +58,9 @@ export const navigationCustomizations = {
   },
   MuiSelect: {
     defaultProps: {
-      IconComponent: React.forwardRef((props, ref) => (
-        <UnfoldMoreRoundedIcon fontSize="small" {...props} ref={ref} />
-      )),
+      IconComponent: React.forwardRef(function IconComponent(props, ref) {
+        return <UnfoldMoreRoundedIcon fontSize="small" {...props} ref={ref} />;
+      }),
     },
     styleOverrides: {
       root: ({ theme }) => ({

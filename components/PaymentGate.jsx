@@ -130,7 +130,7 @@ const PaymentForm = ({ amount = 0, currency = 'USD' }) => {
         cvv: '',
         name: ''
       });
-    } catch (err) {
+    } catch {
       setError('Payment processing failed. Please try again.');
     } finally {
       setLoading(false);

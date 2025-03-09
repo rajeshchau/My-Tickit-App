@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Ban } from "lucide-react";
-import { refundEventTickets } from "@/app/actions/refundEventTickets";
+// import { refundEventTickets } from "@/app/actions/refundEventTickets";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -30,7 +30,7 @@ export default function CancelEventButton({
 
     setIsCancelling(true);
     try {
-      await refundEventTickets(eventId);
+      // await refundEventTickets(eventId);
       await cancelEvent({ eventId });
       toast({
         title: "Event cancelled",
